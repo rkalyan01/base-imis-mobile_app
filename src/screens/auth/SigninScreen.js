@@ -39,14 +39,12 @@ import { setValue } from "../../helpers/localstorage";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { Spacer } from "../../components/Layout";
-import { SheetManager } from "react-native-actions-sheet";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { kSheets } from "../../sheets/constants";
+import MaterialIcon from "react-native-vector-icons/MaterialIcons";
 import {
   getBaseUrl,
-  getServerId,
-  getServers,
-  switchServer,
+  getServer,
+  switchToNextServer,
 } from "../../constants/config";
 
 const SigninScreen = ({ navigation }) => {
@@ -63,11 +61,7 @@ const SigninScreen = ({ navigation }) => {
   const [pwdHidden, setPwdHidden] = useState(true);
   const [rememberMe, setRememberMe] = useState(false);
 
-  const [serverId, setServerId] = useState(getServerId());
-  const [serverUrl, setServerUrl] = useState(getBaseUrl());
-  const [switchingServer, setSwitchingServer] = useState(false);
-  const servers = getServers();
-  const server = servers.find((s) => s.id === serverId);
+  const [server, setServer] = useState(getServer());
 
   const { username } = useSelector((state) => state.auth);
   const buildNumber = DeviceInfo.getVersion();
@@ -83,30 +77,11 @@ const SigninScreen = ({ navigation }) => {
     setRememberMe(!rememberMe);
   };
 
+  // Tapping the address under the version moves to the next server.
   const onServerPressed = async () => {
-    Keyboard.dismiss();
-    const options = servers.map((s) => ({ label: s.label, value: s.id }));
-    const picked = await SheetManager.show(kSheets.selectionSheet, {
-      payload: {
-        title: "Server",
-        options,
-        selectedOption: options.find((o) => o.value === serverId),
-      },
-    });
-    if (!picked || picked.value === serverId) return;
-
-    setSwitchingServer(true);
-    try {
-      const result = await switchServer(picked.value);
-      // A token left from another server must never be sent to this one.
-      await AsyncStorage.removeItem("token").catch(() => {});
-      setServerId(result.serverId);
-      setServerUrl(result.url);
-    } catch (e) {
-      console.log("switchServer failed", e);
-    } finally {
-      setSwitchingServer(false);
-    }
+    setServer(await switchToNextServer());
+    // A token left from another server must never be sent to this one.
+    await AsyncStorage.removeItem("token").catch(() => {});
   };
 
   const onLoginPressed = () => {
@@ -256,34 +231,12 @@ const SigninScreen = ({ navigation }) => {
           />
           <Text>Remember me</Text>
         </TouchableOpacity>
-        <VerticalSpacer size={5} />
-        <TouchableOpacity
-          activeOpacity={0.6}
-          style={styles.serverRow}
-          onPress={onServerPressed}
-          disabled={switchingServer || isLoading}
-        >
-          <View style={styles.serverText}>
-            <Text style={styles.serverLabel}>Server: {server?.label ?? serverId}</Text>
-            <Text
-              style={[styles.serverUrl, !serverUrl && styles.serverError]}
-              numberOfLines={1}
-            >
-              {switchingServer
-                ? "Loading address…"
-                : serverUrl
-                ? serverUrl.replace(/^https:\/\//, "")
-                : "Address could not be loaded"}
-            </Text>
-          </View>
-          <Text style={styles.serverChange}>Change</Text>
-        </TouchableOpacity>
         <VerticalSpacer size={15} />
         <Button
           icon="login"
           mode="contained"
           loading={isLoading}
-          disabled={isLoading || switchingServer}
+          disabled={isLoading}
           onPress={onLoginPressed}
           contentStyle={styles.btnContentStyle}
         >
@@ -292,6 +245,18 @@ const SigninScreen = ({ navigation }) => {
 
         <View style={styles.footer}>
           <Text style={styles.buildNumber}>{buildNumber ?? ""}</Text>
+          <TouchableOpacity
+            activeOpacity={0.6}
+            onPress={onServerPressed}
+            disabled={isLoading}
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+            style={styles.serverSwitch}
+          >
+            <Text style={styles.serverLabel} numberOfLines={1}>
+              {server.label} • {getBaseUrl().replace(/^https:\/\//, "") || "no address"}
+            </Text>
+            <MaterialIcon name="swap-horiz" size={16} color={COLORS.gray} />
+          </TouchableOpacity>
         </View>
       </KeyboardAwareScrollView>
     </SafeAreaView>
@@ -313,6 +278,7 @@ const styles = StyleSheet.create({
   },
   footer: {
     justifyContent: "flex-end",
+    alignItems: "center",
     alignSelf: "center",
     flex: 1,
   },
@@ -320,7 +286,8 @@ const styles = StyleSheet.create({
   buildNumber: {
     fontSize: 16,
     color: COLORS.gray,
-    paddingVertical: 18,
+    paddingTop: 18,
+    paddingBottom: 6,
   },
   logo: {
     width: size * 0.9,
@@ -349,27 +316,18 @@ const styles = StyleSheet.create({
     color: COLORS.error,
   },
 
-  serverRow: {
+  serverSwitch: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: SPACINGS.xs,
-    paddingHorizontal: 8,
-  },
-  serverText: {
-    flex: 1,
+    gap: 6,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    marginBottom: 14,
+    borderRadius: 20,
+    backgroundColor: "#EEEEEE",
   },
   serverLabel: {
-    fontSize: 14,
-  },
-  serverUrl: {
     fontSize: 12,
     color: COLORS.gray,
-  },
-  serverError: {
-    color: COLORS.error,
-  },
-  serverChange: {
-    color: COLORS.primary,
-    fontWeight: "600",
   },
 });
