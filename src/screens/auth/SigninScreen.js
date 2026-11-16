@@ -39,6 +39,15 @@ import { setValue } from "../../helpers/localstorage";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { Spacer } from "../../components/Layout";
+import { SheetManager } from "react-native-actions-sheet";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { kSheets } from "../../sheets/constants";
+import {
+  getBaseUrl,
+  getServerId,
+  getServers,
+  switchServer,
+} from "../../constants/config";
 
 const SigninScreen = ({ navigation }) => {
   const emailRef = useRef();
@@ -54,6 +63,12 @@ const SigninScreen = ({ navigation }) => {
   const [pwdHidden, setPwdHidden] = useState(true);
   const [rememberMe, setRememberMe] = useState(false);
 
+  const [serverId, setServerId] = useState(getServerId());
+  const [serverUrl, setServerUrl] = useState(getBaseUrl());
+  const [switchingServer, setSwitchingServer] = useState(false);
+  const servers = getServers();
+  const server = servers.find((s) => s.id === serverId);
+
   const { username } = useSelector((state) => state.auth);
   const buildNumber = DeviceInfo.getVersion();
 
@@ -68,8 +83,41 @@ const SigninScreen = ({ navigation }) => {
     setRememberMe(!rememberMe);
   };
 
+  const onServerPressed = async () => {
+    Keyboard.dismiss();
+    const options = servers.map((s) => ({ label: s.label, value: s.id }));
+    const picked = await SheetManager.show(kSheets.selectionSheet, {
+      payload: {
+        title: "Server",
+        options,
+        selectedOption: options.find((o) => o.value === serverId),
+      },
+    });
+    if (!picked || picked.value === serverId) return;
+
+    setSwitchingServer(true);
+    try {
+      const result = await switchServer(picked.value);
+      // A token left from another server must never be sent to this one.
+      await AsyncStorage.removeItem("token").catch(() => {});
+      setServerId(result.serverId);
+      setServerUrl(result.url);
+    } catch (e) {
+      console.log("switchServer failed", e);
+    } finally {
+      setSwitchingServer(false);
+    }
+  };
+
   const onLoginPressed = () => {
     Keyboard.dismiss();
+    if (!getBaseUrl()) {
+      Alert.alert(
+        "Server not available",
+        "The server address could not be loaded. Check the internet connection or choose another server."
+      );
+      return;
+    }
     const isValid = validateLoginDetails();
     if (isValid) {
       login();
@@ -208,12 +256,34 @@ const SigninScreen = ({ navigation }) => {
           />
           <Text>Remember me</Text>
         </TouchableOpacity>
+        <VerticalSpacer size={5} />
+        <TouchableOpacity
+          activeOpacity={0.6}
+          style={styles.serverRow}
+          onPress={onServerPressed}
+          disabled={switchingServer || isLoading}
+        >
+          <View style={styles.serverText}>
+            <Text style={styles.serverLabel}>Server: {server?.label ?? serverId}</Text>
+            <Text
+              style={[styles.serverUrl, !serverUrl && styles.serverError]}
+              numberOfLines={1}
+            >
+              {switchingServer
+                ? "Loading address…"
+                : serverUrl
+                ? serverUrl.replace(/^https:\/\//, "")
+                : "Address could not be loaded"}
+            </Text>
+          </View>
+          <Text style={styles.serverChange}>Change</Text>
+        </TouchableOpacity>
         <VerticalSpacer size={15} />
         <Button
           icon="login"
           mode="contained"
           loading={isLoading}
-          disabled={isLoading}
+          disabled={isLoading || switchingServer}
           onPress={onLoginPressed}
           contentStyle={styles.btnContentStyle}
         >
@@ -277,5 +347,29 @@ const styles = StyleSheet.create({
 
   errorText: {
     color: COLORS.error,
+  },
+
+  serverRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: SPACINGS.xs,
+    paddingHorizontal: 8,
+  },
+  serverText: {
+    flex: 1,
+  },
+  serverLabel: {
+    fontSize: 14,
+  },
+  serverUrl: {
+    fontSize: 12,
+    color: COLORS.gray,
+  },
+  serverError: {
+    color: COLORS.error,
+  },
+  serverChange: {
+    color: COLORS.primary,
+    fontWeight: "600",
   },
 });
