@@ -50,7 +50,7 @@ import { Controller } from "react-hook-form";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { URLS } from "../../core/constants/urls";
 import axios from "axios";
-import { BASE_URL_ENV } from "../../constants/config";
+import { getBaseUrl } from "../../constants/config";
 import { isAnfPending as isAnfPendingItem } from "../../utils/applicationState";
 import { ROUTES } from "../../core/constants/routes";
 import colors, { lightTheme } from "../../core/theme/colors";
@@ -1082,7 +1082,7 @@ export default function ApplicationFormScreen({ navigation, route }) {
         formdata.append(key, values[key]);
       });
       const token = await AsyncStorage.getItem("token");
-      const postUrl = `${BASE_URL_ENV}/api/${apiPath.post}`;
+      const postUrl = `${getBaseUrl()}/api/${apiPath.post}`;
 
       const headers =
         type == "emptying"

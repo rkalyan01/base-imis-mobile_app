@@ -2,7 +2,7 @@ import React from "react";
 import { WMSTile } from "react-native-maps";
 import { useSelector } from "react-redux";
 
-import { BASE_URL_ENV } from "../../constants/config";
+import { getBaseUrl } from "../../constants/config";
 import { mergeWmsLinks, wmsProxyUrl } from "../../utils/wmsUrl";
 
 // WMS overlay that loads through the API proxy with the logged-in user's token.
@@ -13,7 +13,7 @@ import { mergeWmsLinks, wmsProxyUrl } from "../../utils/wmsUrl";
 // map is fully zoomed in.
 const SecureWMSTile = ({ links, ...props }) => {
   const token = useSelector((state) => state.auth.token);
-  const urlTemplate = wmsProxyUrl(`${BASE_URL_ENV}/api`, mergeWmsLinks(links));
+  const urlTemplate = wmsProxyUrl(`${getBaseUrl()}/api`, mergeWmsLinks(links));
 
   if (!urlTemplate) return null;
 

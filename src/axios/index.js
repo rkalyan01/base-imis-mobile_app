@@ -1,7 +1,7 @@
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getValue } from "../helpers/localstorage";
-import { BASE_URL_ENV } from "../constants/config";
+import { getBaseUrl } from "../constants/config";
 import * as AxiosLogger from "axios-logger";
 import { Alert } from "react-native";
 import store from "../store";
@@ -13,7 +13,6 @@ import { resetToken } from "../store/slices/auth.slice";
 let headers = { "Content-Type": "application/json" };
 
 const client = axios.create({
-  baseURL: `${BASE_URL_ENV}/api/`,
   headers,
   // Default only: individual calls (e.g. ANF writes) may pass a longer timeout.
   timeout: 13000,
@@ -22,6 +21,8 @@ const client = axios.create({
 client.interceptors.request.use(
   async (config) => {
     try {
+      // Set per request: the server URL is loaded at startup (see loadBaseUrl).
+      config.baseURL = `${getBaseUrl()}/api/`;
       const token = await getValue("token");
       config.headers.Accept = `application/json`;
 

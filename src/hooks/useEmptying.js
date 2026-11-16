@@ -16,7 +16,7 @@ import {
   vacutugTypesAPI,
 } from "../service/supervisor_service";
 import { resetToken } from "../store/slices/auth.slice";
-import { BASE_URL_ENV } from "../constants/config";
+import { getBaseUrl } from "../constants/config";
 import axios from "axios";
 
 const useEmptying = (application) => {
@@ -445,7 +445,7 @@ const useEmptying = (application) => {
       }
 
       console.log("FormData!!!!", formdata);
-      const postUrl = `${BASE_URL_ENV}/api/${URLS.saveEmptyingService}`;
+      const postUrl = `${getBaseUrl()}/api/${URLS.saveEmptyingService}`;
 
       try {
         const res = await axios.post(postUrl, formdata, {

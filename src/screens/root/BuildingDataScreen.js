@@ -29,7 +29,7 @@ import { URLS } from "../../core/constants/urls";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ErrorMessage } from "../../components/errorComponent";
 import { Header } from "../../components/headers";
-import { BASE_URL_ENV } from "../../constants/config";
+import { getBaseUrl } from "../../constants/config";
 
 const BuildingDataScreen = ({ navigation }) => {
   const dispatch = useDispatch();
@@ -91,7 +91,7 @@ const BuildingDataScreen = ({ navigation }) => {
 
     const token = await AsyncStorage.getItem("token");
 
-    const url = `${BASE_URL_ENV}/api/${URLS.uploadBuildingData}`;
+    const url = `${getBaseUrl()}/api/${URLS.uploadBuildingData}`;
 
     fetch(url, {
       method: "POST",

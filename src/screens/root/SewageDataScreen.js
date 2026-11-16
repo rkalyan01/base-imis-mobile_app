@@ -17,7 +17,7 @@ import { URLS } from "../../core/constants/urls";
 import { resetToken } from "../../store/slices/auth.slice";
 import { ErrorMessage } from "../../components/errorComponent";
 import { Header } from "../../components/headers";
-import { BASE_URL_ENV } from "../../constants/config";
+import { getBaseUrl } from "../../constants/config";
 
 const BuildingDataScreen = () => {
   const { contentsLabel } = useSelector((state) => state.auth);
@@ -55,7 +55,7 @@ const BuildingDataScreen = () => {
 
     const token = await AsyncStorage.getItem("token");
 
-    const url = `${BASE_URL_ENV}/api/${URLS.saveSewerData}`;
+    const url = `${getBaseUrl()}/api/${URLS.saveSewerData}`;
 
     const formdata = new FormData();
 
