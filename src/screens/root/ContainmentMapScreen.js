@@ -1,10 +1,11 @@
+import StaticMarker from "../../components/mapcomponent/StaticMarker";
 import { useDispatch, useSelector } from "react-redux";
 import SecureWMSTile from "../../components/mapcomponent/SecureWMSTile";
 import ZoomToCityButton from "../../components/mapcomponent/ZoomToCityButton";
 import { joinWmsUrl } from "../../utils/wmsUrl";
 import { Alert, StyleSheet, View } from "react-native";
 import React, { useRef, useEffect, useState } from "react";
-import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
+import MapView, { PROVIDER_GOOGLE } from "react-native-maps";
 
 import { INITIAL_LOCATION } from "../../core/constants/map";
 
@@ -179,7 +180,7 @@ const BuildingMapScreen = ({ navigation }) => {
         showsPointsOfInterest={false}
       >
         {containmentCoords && (
-          <Marker
+          <StaticMarker
             draggable
             coordinate={containmentCoords}
             onDragEnd={onDragEnd}

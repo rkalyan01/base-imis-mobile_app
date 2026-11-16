@@ -1,6 +1,7 @@
 import { FAB, Text } from "react-native-paper";
 import SecureWMSTile from "../../components/mapcomponent/SecureWMSTile";
 import ZoomToCityButton from "../../components/mapcomponent/ZoomToCityButton";
+import StaticMarker from "../../components/mapcomponent/StaticMarker";
 import { joinWmsUrl } from "../../utils/wmsUrl";
 import colors from "../../core/theme/colors";
 import { useDispatch, useSelector } from "react-redux";
@@ -13,7 +14,7 @@ import {
   View,
 } from "react-native";
 import React, { useRef, useEffect, useState, useCallback } from "react";
-import { Marker, Polygon } from "react-native-maps";
+import { Polygon } from "react-native-maps";
 import IonIcon from "react-native-vector-icons/Ionicons";
 import { getDistance } from "geolib";
 
@@ -206,7 +207,12 @@ const BuildingMapScreen = () => {
   // };
 
   const handlePressOnMarker = (index) => {
+    // iOS also reports the tap to the map; Android does not, so reset the flag
+    // here or the next tap on the map would be ignored.
     markerPressedRef.current = true;
+    setTimeout(() => {
+      markerPressedRef.current = false;
+    }, 300);
     const markerNum = index + 1;
     Alert.alert(
       getLabel("DELETE"),
@@ -217,8 +223,8 @@ const BuildingMapScreen = () => {
         {
           text: getLabel("YES"),
           onPress: () => {
-            setBuildingCoordsState(
-              buildingCoordsState.filter((_, i) => i !== index)
+            setBuildingCoordsState((coords) =>
+              coords.filter((_, i) => i !== index)
             );
           },
         },
@@ -285,7 +291,7 @@ const BuildingMapScreen = () => {
             markerdrag={!dragging}
           >
             {buildingCoordsState.map((marker, index) => (
-              <Marker
+              <StaticMarker
                 zIndex={marker.zIndex}
                 draggable
                 poiClickEnabled={false}
@@ -312,7 +318,7 @@ const BuildingMapScreen = () => {
                     style={{ height: 34, width: 34 }}
                   />
                 </View>
-              </Marker>
+              </StaticMarker>
             ))}
             {buildingCoordsState.length > 0 && (
               <>
@@ -326,13 +332,6 @@ const BuildingMapScreen = () => {
 
                 {buildingCoordsState.length > 0 && (
                   <>
-                    <Polygon
-                      coordinates={buildingCoordsState}
-                      geodesic={false}
-                      strokeWidth={2}
-                      strokeColor={COLORS.success}
-                      fillColor="rgba(45,87,250,0.15)"
-                    />
                     {buildingCoordsState.length > 1 &&
                       buildingCoordsState.map((point, index) => {
                         const nextPoint =
@@ -345,8 +344,9 @@ const BuildingMapScreen = () => {
                           nextPoint
                         );
                         return (
-                          <Marker
+                          <StaticMarker
                             key={index}
+                            redrawKey={distance}
                             coordinate={midpoint}
                             pinColor="transparent"
                           >
@@ -362,7 +362,7 @@ const BuildingMapScreen = () => {
                             >
                               {distance}m
                             </Text>
-                          </Marker>
+                          </StaticMarker>
                         );
                       })}
                   </>

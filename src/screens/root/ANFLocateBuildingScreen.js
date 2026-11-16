@@ -21,7 +21,8 @@ import {
   Text,
   useTheme,
 } from "react-native-paper";
-import { Marker, Polygon } from "react-native-maps";
+import { Polygon } from "react-native-maps";
+import StaticMarker from "../../components/mapcomponent/StaticMarker";
 import IonIcon from "react-native-vector-icons/Ionicons";
 import MaterialIcon from "react-native-vector-icons/MaterialCommunityIcons";
 import BottomSheet, {
@@ -691,7 +692,7 @@ const ANFLocateBuildingScreen = ({ navigation, route }) => {
           >
             {/* Tapped location marker */}
             {tappedCoordinate && (
-              <Marker
+              <StaticMarker
                 coordinate={tappedCoordinate}
                 pinColor="#F59E0B"
               >
@@ -701,7 +702,7 @@ const ANFLocateBuildingScreen = ({ navigation, route }) => {
                     style={{ height: 40, width: 40 }}
                   />
                 </View>
-              </Marker>
+              </StaticMarker>
             )}
 
             {/* WMS Layers */}

@@ -1,9 +1,10 @@
+import StaticMarker from "../../components/mapcomponent/StaticMarker";
 import React, { useEffect, useRef, useState } from "react";
 import SecureWMSTile from "../../components/mapcomponent/SecureWMSTile";
 import ZoomToCityButton from "../../components/mapcomponent/ZoomToCityButton";
 import { joinWmsUrl } from "../../utils/wmsUrl";
 import { Alert, Platform, StyleSheet, View } from "react-native";
-import { Marker } from "react-native-maps";
+
 import { FAB, Text } from "react-native-paper";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { useDispatch, useSelector } from "react-redux";
@@ -371,7 +372,7 @@ const SewageMapScreen = ({ navigation }) => {
   // };
   const renderMarkeredPoint = () => {
     return (
-      <Marker
+      <StaticMarker
         coordinate={markeredPoint}
         draggable
         onDragEnd={(event) => onDragEnd(index, event)}
@@ -394,7 +395,7 @@ const SewageMapScreen = ({ navigation }) => {
           ></View>
           <Icon name="map-marker" size={52} color={COLORS.primary} />
         </View>
-      </Marker>
+      </StaticMarker>
     );
   };
   const onDragEnd = (index, event) => {
@@ -409,9 +410,10 @@ const SewageMapScreen = ({ navigation }) => {
     const markerNum = index + 1;
 
     return (
-      <Marker
+      <StaticMarker
         draggable
         key={index}
+        redrawKey={mapType}
         coordinate={e}
         onDragEnd={(event) => onDragEnd(index, event)}
         onPress={() => handlePressOnMarker(index)}
@@ -431,7 +433,7 @@ const SewageMapScreen = ({ navigation }) => {
           <Icon name="map-marker" size={40} color={COLORS.primary} />
           {/* <Badge style={styles.markerBadge}>{markerNum}</Badge> */}
         </>
-      </Marker>
+      </StaticMarker>
     );
   };
 
@@ -462,7 +464,7 @@ const SewageMapScreen = ({ navigation }) => {
             }}
           >
             {/* {buildingMarker && (
-            <Marker coordinate={buildingMarker}>
+            <StaticMarker coordinate={buildingMarker}>
               <View style={{position: 'relative'}}>
                 <View
                   style={{
@@ -479,10 +481,10 @@ const SewageMapScreen = ({ navigation }) => {
                   }}></View>
                 <Icon name="map-marker" size={52} color="blue" />
               </View>
-            </Marker>
+            </StaticMarker>
           )}
           {sewerMarker && (
-            <Marker coordinate={sewerMarker}>
+            <StaticMarker coordinate={sewerMarker}>
               <View style={{position: 'relative'}}>
                 <View
                   style={{
@@ -499,7 +501,7 @@ const SewageMapScreen = ({ navigation }) => {
                   }}></View>
                 <Icon name="map-marker" size={52} color="red" />
               </View>
-            </Marker>
+            </StaticMarker>
           )}
           {highlightedPolygon && (
             <>

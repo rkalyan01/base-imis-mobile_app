@@ -1,8 +1,9 @@
+import StaticMarker from "../../components/mapcomponent/StaticMarker";
 import React, {useRef, useEffect, useState} from 'react';
 import {StyleSheet, View} from 'react-native';
 import {INITIAL_LOCATION} from '../../core/constants/map';
 import {useSelector} from 'react-redux';
-import MapView, {Marker, PROVIDER_GOOGLE} from 'react-native-maps';
+import MapView, {PROVIDER_GOOGLE} from 'react-native-maps';
 import {Header} from '../../components/headers';
 
 const ContainmentViewerScreen = ({route}) => {
@@ -42,7 +43,7 @@ const ContainmentViewerScreen = ({route}) => {
         showsBuildings={false}
         moveOnMarkerPress={false}
         showsPointsOfInterest={false}>
-        <Marker
+        <StaticMarker
           coordinate={{
             latitude: item.latitude,
             longitude: item.longitude,
